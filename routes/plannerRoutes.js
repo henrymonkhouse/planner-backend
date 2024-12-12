@@ -4,30 +4,33 @@ const router = express.Router();
 
 // Function to normalize date format
 const normalizeDate = (dateString) => {
-  // Ensure the date format is always YYYY-MM-DD
-  const [day, month, year] = dateString.split('/');
-  return `${year}-${month}-${day}`; // Convert 'DD/MM/YYYY' to 'YYYY-MM-DD'
+    // Convert 'DD-MM-YYYY' or 'DD/MM/YYYY' to 'YYYY-MM-DD'
+    const [day, month, year] = dateString.includes('-')
+        ? dateString.split('-')
+        : dateString.split('/');
+    return `${year}-${month}-${day}`;
 };
 
 // Save Planner Data
 router.post('/save', async (req, res) => {
     const { date, morningNotes, dailyTasks, hourlySchedule, tomorrowNotes } = req.body;
-    console.log('Incoming save request with data:', req.body);
+    const normalizedDate = normalizeDate(date); // Normalize the date to 'YYYY-MM-DD'
+    console.log('Incoming save request with data:', { ...req.body, date: normalizedDate });
 
     try {
-        const existingEntry = await Planner.findOne({ date });
+        const existingEntry = await Planner.findOne({ date: normalizedDate });
 
         if (existingEntry) {
-            console.log('Updating existing entry for date:', date);
+            console.log('Updating existing entry for date:', normalizedDate);
             existingEntry.morningNotes = morningNotes;
             existingEntry.dailyTasks = dailyTasks;
             existingEntry.hourlySchedule = hourlySchedule;
             existingEntry.tomorrowNotes = tomorrowNotes;
             await existingEntry.save();
         } else {
-            console.log('Creating a new entry for date:', date);
+            console.log('Creating a new entry for date:', normalizedDate);
             const newPlanner = new Planner({
-                date,
+                date: normalizedDate,
                 morningNotes,
                 dailyTasks,
                 hourlySchedule,
@@ -45,22 +48,23 @@ router.post('/save', async (req, res) => {
 
 // Get Planner Data for a Date
 router.get('/:date', async (req, res) => {
-  const rawDate = req.params.date;
-  console.log('Fetching planner data for raw date:', rawDate);
+    const rawDate = req.params.date;
+    const normalizedDate = normalizeDate(rawDate); // Normalize the date to 'YYYY-MM-DD'
+    console.log('Fetching planner data for normalized date:', normalizedDate);
 
-  try {
-      const plannerData = await Planner.findOne({ date: rawDate }); // Use raw date (already normalized)
-      if (plannerData) {
-          console.log('Planner data found:', plannerData);
-          res.status(200).json(plannerData);
-      } else {
-          console.log('No planner data found for date:', rawDate);
-          res.status(404).json({ message: 'No data found for the given date' });
-      }
-  } catch (err) {
-      console.error('Error fetching planner data:', err.message);
-      res.status(500).json({ error: 'Failed to retrieve planner data' });
-  }
+    try {
+        const plannerData = await Planner.findOne({ date: normalizedDate });
+        if (plannerData) {
+            console.log('Planner data found:', plannerData);
+            res.status(200).json(plannerData);
+        } else {
+            console.log('No planner data found for date:', normalizedDate);
+            res.status(404).json({ message: 'No data found for the given date' });
+        }
+    } catch (err) {
+        console.error('Error fetching planner data:', err.message);
+        res.status(500).json({ error: 'Failed to retrieve planner data' });
+    }
 });
 
 module.exports = router;
