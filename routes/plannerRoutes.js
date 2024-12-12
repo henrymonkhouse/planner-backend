@@ -4,11 +4,16 @@ const router = express.Router();
 
 // Function to normalize date format
 const normalizeDate = (dateString) => {
-    // Convert 'DD-MM-YYYY' or 'DD/MM/YYYY' to 'YYYY-MM-DD'
-    const [day, month, year] = dateString.includes('-')
-        ? dateString.split('-')
-        : dateString.split('/');
-    return `${year}-${month}-${day}`;
+  // If it's already in the format YYYY-MM-DD, just return it
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+  }
+
+  // Otherwise, assume DD/MM/YYYY or DD-MM-YYYY and convert
+  const [day, month, year] = dateString.includes('-')
+      ? dateString.split('-')
+      : dateString.split('/');
+  return `${year}-${month}-${day}`;
 };
 
 // Save Planner Data
