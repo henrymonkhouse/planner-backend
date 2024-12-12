@@ -4,7 +4,7 @@ const router = express.Router();
 
 // Function to normalize date format
 const normalizeDate = (dateString) => {
-  // If it's already in YYYY-MM-DD format, just return it.
+  // If it's already YYYY-MM-DD, just return it.
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
     return dateString;
   }
