@@ -4,15 +4,14 @@ const router = express.Router();
 
 // Function to normalize date format
 const normalizeDate = (dateString) => {
-  // If it's already in the format YYYY-MM-DD, just return it
+  // If it's already in YYYY-MM-DD format, just return it.
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return dateString;
+    return dateString;
   }
 
-  // Otherwise, assume DD/MM/YYYY or DD-MM-YYYY and convert
-  const [day, month, year] = dateString.includes('-')
-      ? dateString.split('-')
-      : dateString.split('/');
+  // Otherwise, convert from DD-MM-YYYY or DD/MM/YYYY
+  const separator = dateString.includes('-') ? '-' : '/';
+  const [day, month, year] = dateString.split(separator);
   return `${year}-${month}-${day}`;
 };
 
